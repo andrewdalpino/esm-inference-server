@@ -8,7 +8,7 @@ from constants import TRAIN_FASTA_FPATH, TRAIN_TERMS_FPATH, OBO_FPATH, MODEL_ID,
 
 
 class ProteinFunctionPredictor:
-    def __init__(self, model: AutoModelForSequenceClassification, tokenizer: AutoTokenizer, unique_terms: List[str], go_terms: List[dict]):
+    def __init__(self, model: AutoModelForSequenceClassification, tokenizer: AutoTokenizer, unique_terms: List[str], go_terms: Dict[str, dict]):
         self.model = model
         self.tokenizer = tokenizer
         self.unique_terms = unique_terms
@@ -46,7 +46,7 @@ class ProteinFunctionPredictor:
         with open(file_path, 'r', encoding='utf-8') as f:
             data = f.read().split("[Term]")
 
-        terms = []
+        go_terms_by_id = {}
         for entry in data[1:]:
             lines = entry.strip().split("\n")
             term = {}
@@ -59,8 +59,8 @@ class ProteinFunctionPredictor:
                     term["namespace"] = line.split("namespace:")[1].strip()
                 elif line.startswith("def:"):
                     term["definition"] = line.split("def:")[1].split('"')[1]
-            terms.append(term)
-        return terms
+            go_terms_by_id[term["id"]] = term
+        return go_terms_by_id
 
     # 3. The predict_protein_function function
     def classify(self, sequence: str) -> List[str]:
@@ -73,11 +73,8 @@ class ProteinFunctionPredictor:
         
         functions = []
         for idx in predicted_indices:
-            term_id = self.unique_terms[idx]  # Use the unique_terms list from your training script
-            for term in self.go_terms:
-                if term["id"] == term_id:
-                    functions.append(term["name"])
-                    break
+            term_id = self.unique_terms[idx]
+            functions.append(self.go_terms[term_id]["name"])
 
         return functions
     
