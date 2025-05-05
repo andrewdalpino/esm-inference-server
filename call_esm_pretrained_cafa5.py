@@ -1,7 +1,6 @@
 from typing import List, Dict
 import torch
 from transformers import AutoTokenizer, EsmForSequenceClassification
-from Bio import SeqIO
 
 from constants import TRAIN_FASTA_FPATH, TRAIN_TERMS_FPATH, OBO_FPATH, MODEL_ID, MINIMUM_PROBABILITY
 
@@ -15,9 +14,6 @@ class ProteinFunctionPredictor:
 
     @classmethod
     def from_files(cls, model_id: str = MODEL_ID, fasta_fpath: str = TRAIN_FASTA_FPATH, tsv_fpath: str = TRAIN_TERMS_FPATH, obo_fpath: str = OBO_FPATH):
-        fasta_data = {}
-        for record in SeqIO.parse(fasta_fpath, "fasta"):
-            fasta_data[record.id] = str(record.seq)
         tsv_data = cls.parse_tsv_file(tsv_fpath)
         unique_terms = list(set(term for terms in tsv_data.values() for term in terms))
 
