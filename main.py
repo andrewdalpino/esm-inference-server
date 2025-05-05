@@ -1,4 +1,5 @@
 import os
+from typing import List
 
 import uvicorn
 
@@ -7,9 +8,9 @@ import torch
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from typing import List
 
-from model import ESMModel
+# from model import ESMModel
+from call_esm_pretrained_cafa5 import ProteinFunctionPredictor
 
 app = FastAPI(
     title="ESM Inference API",
@@ -17,11 +18,11 @@ app = FastAPI(
     version="0.0.1",
 )
 
-model_name = os.environ.get("ESM_MODEL_NAME", "facebook/esm2_t6_8M_UR50D")
+# model_name = os.environ.get("ESM_MODEL_NAME", "facebook/esm2_t6_8M_UR50D")
 device = os.environ.get("ESM_DEVICE", "cuda" if torch.cuda.is_available() else "cpu")
 
-model = ESMModel(name=model_name, device=device)
-
+# model = ESMModel(name=model_name, device=device)
+model = ProteinFunctionPredictor.from_files()
 
 class HealthResponse(BaseModel):
     status: str
