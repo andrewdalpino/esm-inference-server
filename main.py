@@ -1,4 +1,5 @@
 import os
+from typing import List
 
 import uvicorn
 
@@ -7,7 +8,6 @@ import torch
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from typing import List
 
 # from model import ESMModel
 from call_esm_pretrained_cafa5 import ProteinFunctionPredictor

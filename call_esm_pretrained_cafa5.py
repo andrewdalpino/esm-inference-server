@@ -1,61 +1,28 @@
-import os
-import numpy as np
+from typing import List, Dict
 import torch
-from transformers import AutoTokenizer, EsmForSequenceClassification, AutoModelForSequenceClassification
-from peft import PeftModel, PeftConfig
-from torch.optim import AdamW
-from torch.nn.functional import binary_cross_entropy_with_logits
-from sklearn.metrics import precision_recall_fscore_support
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import f1_score, precision_score, recall_score
-from accelerate import Accelerator
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from peft import PeftModel
 from Bio import SeqIO
 
-from constants import TRAIN_FASTA_FPATH, TRAIN_TERMS_FPATH, TEST_FASTA_FPATH, OBO_FPATH, MODEL_ID, MINIMUM_PROBABILITY
-
-
-
-# unique_terms = list(set(term for terms in tsv_data.values() for term in terms)) # Note: bad practice, this should be sorted but left for now since it needs to match the training.
-
-
-# # Parse the provided FASTA file
-# protein_sequences = parse_fasta(TEST_FASTA_FPATH)
-
-# # 1. Parsing the go-basic.obo file (Assuming this is still needed)
-
-# parsed_terms = parse_obo_file(OBO_FPATH)  # Replace with your path
-
-# # 2. Load the saved model and tokenizer
-
-# # Load the tokenizer and model
-# tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
-
-# # First, we load the underlying base model
-# base_model = AutoModelForSequenceClassification.from_pretrained(MODEL_ID)
-
-# # Then, we load the model with PEFT
-# model = PeftModel.from_pretrained(base_model, MODEL_ID)
-# loaded_model = model
-# loaded_tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
-
+from constants import TRAIN_FASTA_FPATH, TRAIN_TERMS_FPATH, OBO_FPATH, MODEL_ID, MINIMUM_PROBABILITY
 
 
 class ProteinFunctionPredictor:
-    def __init__(self, model, tokenizer, unique_terms, go_terms):
+    def __init__(self, model: AutoModelForSequenceClassification, tokenizer: AutoTokenizer, unique_terms: List[str], go_terms: List[dict]):
         self.model = model
         self.tokenizer = tokenizer
         self.unique_terms = unique_terms
         self.go_terms = go_terms
 
     @classmethod
-    def from_files(cls, model_id=MODEL_ID, fasta_path=TRAIN_FASTA_FPATH, tsv_path=TRAIN_TERMS_FPATH, obo_path=OBO_FPATH):
+    def from_files(cls, model_id: str = MODEL_ID, fasta_fpath: str = TRAIN_FASTA_FPATH, tsv_fpath: str = TRAIN_TERMS_FPATH, obo_fpath: str = OBO_FPATH):
         fasta_data = {}
-        for record in SeqIO.parse(fasta_path, "fasta"):
+        for record in SeqIO.parse(fasta_fpath, "fasta"):
             fasta_data[record.id] = str(record.seq)
-        tsv_data = cls.parse_tsv_file(tsv_path)
+        tsv_data = cls.parse_tsv_file(tsv_fpath)
         unique_terms = list(set(term for terms in tsv_data.values() for term in terms))
 
-        go_terms = cls.parse_obo_file(OBO_FPATH)  # Replace with your path
+        go_terms = cls.parse_obo_file(obo_fpath)  # Replace with your path
         tokenizer = AutoTokenizer.from_pretrained(model_id)
 
         # First, we load the underlying base model
@@ -64,21 +31,21 @@ class ProteinFunctionPredictor:
         model = PeftModel.from_pretrained(base_model, model_id)
 
         return cls(model, tokenizer, unique_terms, go_terms)
-    
+
     @staticmethod
-    def parse_tsv_file(file_path):
+    def parse_tsv_file(file_path: str) -> Dict[str, List[str]]:
         tsv_data = {}
-        with open(file_path, 'r') as f:
+        with open(file_path, 'r', encoding='utf-8') as f:
             for line in f:
                 parts = line.strip().split("\t")
                 tsv_data[parts[0]] = parts[1:]
         return tsv_data
-            
+
     @staticmethod
-    def parse_obo_file(file_path):
-        with open(file_path, 'r') as f:
+    def parse_obo_file(file_path: str) -> List[dict]:
+        with open(file_path, 'r', encoding='utf-8') as f:
             data = f.read().split("[Term]")
-            
+
         terms = []
         for entry in data[1:]:
             lines = entry.strip().split("\n")
@@ -95,32 +62,8 @@ class ProteinFunctionPredictor:
             terms.append(term)
         return terms
 
-    # @staticmethod
-    # def parse_fasta(file_path):
-    #     """
-    #     Parses a FASTA file and returns a list of sequences.
-    #     """
-    #     with open(file_path, 'r') as f:
-    #         content = f.readlines()
-
-    #     sequences = []
-    #     current_sequence = ""
-
-    #     for line in content:
-    #         if line.startswith(">"):
-    #             if current_sequence:
-    #                 sequences.append(current_sequence)
-    #                 current_sequence = ""
-    #         else:
-    #             current_sequence += line.strip()
-
-    #     if current_sequence:
-    #         sequences.append(current_sequence)
-
-    #     return sequences
-
     # 3. The predict_protein_function function
-    def classify(self, sequence):
+    def classify(self, sequence: str) -> List[str]:
         inputs = self.tokenizer(sequence, return_tensors="pt", padding=True, truncation=True, max_length=1022)
         self.model.eval()
         with torch.no_grad():
@@ -135,5 +78,6 @@ class ProteinFunctionPredictor:
                 if term["id"] == term_id:
                     functions.append(term["name"])
                     break
-                    
+
         return functions
+    
