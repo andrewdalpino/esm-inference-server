@@ -2,7 +2,7 @@ from typing import List, Dict
 import torch
 from transformers import AutoTokenizer, EsmForSequenceClassification
 
-from constants import TRAIN_FASTA_FPATH, TRAIN_TERMS_FPATH, OBO_FPATH, MODEL_ID, MINIMUM_PROBABILITY
+from constants import TRAIN_TERMS_FPATH, OBO_FPATH, MODEL_ID, MINIMUM_PROBABILITY
 
 
 class ProteinFunctionPredictor:
