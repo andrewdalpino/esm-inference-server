@@ -21,7 +21,7 @@ app = FastAPI(
 model_name = os.environ.get("ESM_MODEL_NAME", "facebook/esm2_t6_8M_UR50D")
 device = os.environ.get("ESM_DEVICE", "cuda" if torch.cuda.is_available() else "cpu")
 
-model = ESMModel(name=model_name)
+model = ESMModel(name=model_name, device=device)
 
 
 class HealthResponse(BaseModel):
