@@ -29,7 +29,7 @@ class HealthResponse(BaseModel):
 
 
 class SequenceRequest(BaseModel):
-    sequence: str = Field(min_length=1, description="A protein sequence.")
+    sequence: str = Field(min_length=1, description="A protein sequence to classify.")
 
 
 class ClassifyResponse(BaseModel):
@@ -58,11 +58,11 @@ async def classify(request: SequenceRequest):
         with Timer() as timer:
             result = model.classify(request.sequence)
 
-        result.update(
-            {
-                "runtime": timer.duration,
-            }
-        )
+        metadata = {
+            "runtime": timer.duration,
+        }
+
+        result.update(metadata)
 
         return result
     except Exception as e:
