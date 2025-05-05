@@ -1,14 +1,13 @@
 from typing import List, Dict
 import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from peft import PeftModel
+from transformers import AutoTokenizer, EsmForSequenceClassification
 from Bio import SeqIO
 
 from constants import TRAIN_FASTA_FPATH, TRAIN_TERMS_FPATH, OBO_FPATH, MODEL_ID, MINIMUM_PROBABILITY
 
 
 class ProteinFunctionPredictor:
-    def __init__(self, model: AutoModelForSequenceClassification, tokenizer: AutoTokenizer, unique_terms: List[str], go_terms: Dict[str, dict]):
+    def __init__(self, model, tokenizer, unique_terms: List[str], go_terms: Dict[str, dict]):
         self.model = model
         self.tokenizer = tokenizer
         self.unique_terms = unique_terms
@@ -22,15 +21,11 @@ class ProteinFunctionPredictor:
         tsv_data = cls.parse_tsv_file(tsv_fpath)
         unique_terms = list(set(term for terms in tsv_data.values() for term in terms))
 
-        go_terms = cls.parse_obo_file(obo_fpath)  # Replace with your path
-        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        go_terms = cls.parse_obo_file(obo_fpath) 
+        loaded_model = EsmForSequenceClassification.from_pretrained(model_id)
+        loaded_tokenizer = AutoTokenizer.from_pretrained(model_id)
 
-        # First, we load the underlying base model
-        base_model = AutoModelForSequenceClassification.from_pretrained(model_id)
-        # Then, we load the model with PEFT
-        model = PeftModel.from_pretrained(base_model, model_id)
-
-        return cls(model, tokenizer, unique_terms, go_terms)
+        return cls(loaded_model, loaded_tokenizer, unique_terms, go_terms)
 
     @staticmethod
     def parse_tsv_file(file_path: str) -> Dict[str, List[str]]:
