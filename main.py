@@ -28,7 +28,7 @@ class HealthResponse(BaseModel):
     status: str
 
 
-class SequenceRequest(BaseModel):
+class ClassifyRequest(BaseModel):
     sequence: str = Field(min_length=1, description="A protein sequence to classify.")
 
 
@@ -49,7 +49,7 @@ async def health_check():
 
 
 @app.post("/classify", response_model=ClassifyResponse)
-async def classify(request: SequenceRequest):
+async def classify(request: ClassifyRequest):
     """Classify a protein sequence."""
 
     global model
@@ -66,7 +66,7 @@ async def classify(request: SequenceRequest):
 
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Inference error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 
 if __name__ == "__main__":
