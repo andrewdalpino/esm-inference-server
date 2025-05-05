@@ -14,4 +14,4 @@ wheels/
 .venv
 venv/
 ENV/
-.vscode
+.vscode/

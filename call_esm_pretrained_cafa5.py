@@ -13,7 +13,7 @@ class ProteinFunctionPredictor:
         self.go_terms = go_terms
 
     @classmethod
-    def from_files(cls, model_id: str = MODEL_ID, fasta_fpath: str = TRAIN_FASTA_FPATH, tsv_fpath: str = TRAIN_TERMS_FPATH, obo_fpath: str = OBO_FPATH):
+    def from_files(cls, model_id: str = MODEL_ID, tsv_fpath: str = TRAIN_TERMS_FPATH, obo_fpath: str = OBO_FPATH):
         tsv_data = cls.parse_tsv_file(tsv_fpath)
         unique_terms = list(set(term for terms in tsv_data.values() for term in terms))
 
