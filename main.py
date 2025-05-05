@@ -10,7 +10,6 @@ from pydantic import BaseModel, Field
 from typing import List
 
 from model import ESMModel
-from util import Timer
 
 app = FastAPI(
     title="ESM Inference API",
@@ -55,16 +54,7 @@ async def classify(request: ClassifyRequest):
     global model
 
     try:
-        with Timer() as timer:
-            result = model.classify(request.sequence)
-
-        metadata = {
-            "runtime": timer.duration,
-        }
-
-        result.update(metadata)
-
-        return result
+        return model.classify(request.sequence)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 

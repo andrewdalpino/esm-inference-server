@@ -4,6 +4,8 @@ from transformers import AutoTokenizer, EsmForSequenceClassification
 
 from typing import Dict, Any
 
+from util import Timer
+
 
 class ESMModel:
     def __init__(self, name: str = "facebook/esm2_t6_8M_UR50D", device: str = "cpu"):
@@ -19,6 +21,7 @@ class ESMModel:
 
         self.device: str = device
 
+    @torch.no_grad()
     def classify(self, sequence: str) -> Dict[str, Any]:
         """
         Get the classifications for a protein sequence.
@@ -34,11 +37,12 @@ class ESMModel:
 
         inputs = {k: v.to(self.device) for k, v in inputs.items()}
 
-        with torch.no_grad():
+        with Timer() as timer:
             outputs = self.model(**inputs)
 
             probabilities = torch.sigmoid(outputs.logits.squeeze())
 
         return {
             "probabilities": probabilities.tolist(),
+            "runtime": timer.duration,
         }

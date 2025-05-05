@@ -3,7 +3,7 @@ from time import time
 
 class Timer:
     """Context manager for timing code execution."""
-    
+
     def __enter__(self):
         self.start = time()
         self.duration = None
