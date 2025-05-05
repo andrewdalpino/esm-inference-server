@@ -1,5 +1,4 @@
 import os
-import time
 
 import uvicorn
 
@@ -11,6 +10,7 @@ from pydantic import BaseModel, Field
 from typing import List
 
 from model import ESMModel
+from util import Timer
 
 app = FastAPI(
     title="ESM Inference API",
@@ -39,22 +39,9 @@ class ClassifyResponse(BaseModel):
     runtime: float = Field(description="Time taken to process the request in seconds.")
 
 
-class Timer:
-    def __enter__(self):
-        self.start = time.time()
-        self.duration = None
-
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.duration = time.time() - self.start
-
-
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
     """Check API health and model status"""
-
-    global model
 
     return {
         "status": "Ok",
@@ -62,7 +49,7 @@ async def health_check():
 
 
 @app.post("/classify", response_model=ClassifyResponse)
-async def predict(request: SequenceRequest):
+async def classify(request: SequenceRequest):
     """Classify a protein sequence."""
 
     global model
