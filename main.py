@@ -5,7 +5,7 @@ import uvicorn
 import torch
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, Optional
 
 from model import ESMModel, ProbabilitiesLogitProcessor, ProteinFunctionLogitProcessor
 
@@ -45,6 +45,16 @@ class ClassifyRequest(BaseModel):
     sequence: str = Field(min_length=1, description="A protein sequence to classify.")
 
 
+class ClassifyResponse(BaseModel):
+    functions: Optional[list[str]] = Field(
+        default=None, description="List of predicted protein functions (GO terms)."
+    )
+    probabilities: list[float] = Field(
+        description="List of probabilities for each class."
+    )
+    runtime: float = Field(description="Time taken to process the request in seconds.")
+
+
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
     """Check API health and model status"""
@@ -54,7 +64,7 @@ async def health_check():
     }
 
 
-@app.post("/classify")
+@app.post("/classify", response_model=ClassifyResponse)
 async def classify(request: ClassifyRequest):
     """Classify a protein sequence."""
 
