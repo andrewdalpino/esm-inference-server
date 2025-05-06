@@ -11,8 +11,8 @@ from model import ESMModel, ProbabilitiesLogitProcessor, ProteinFunctionLogitPro
 
 app = FastAPI(
     title="ESM Inference API",
-    description="API for protein sequence embeddings using ESM models.",
-    version="0.0.1",
+    description="API for protein sequence inference using ESM models.",
+    version="0.0.2",
 )
 
 # General environment variables for model configuration.
