@@ -1,5 +1,4 @@
-import os
-from typing import List
+from os import environ
 
 import uvicorn
 
@@ -8,9 +7,7 @@ import torch
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-
-# from model import ESMModel
-from call_esm_pretrained_cafa5 import ProteinFunctionPredictor
+from model import ESMModel, ProbabilitiesLogitProcessor, ProteinFunctionLogitProcessor
 
 app = FastAPI(
     title="ESM Inference API",
@@ -18,11 +15,29 @@ app = FastAPI(
     version="0.0.1",
 )
 
-# model_name = os.environ.get("ESM_MODEL_NAME", "facebook/esm2_t6_8M_UR50D")
-device = os.environ.get("ESM_DEVICE", "cuda" if torch.cuda.is_available() else "cpu")
+# General environment variables for model configuration.
+model_name = environ.get("ESM_MODEL_NAME", "facebook/esm2_t6_8M_UR50D")
+device = environ.get("ESM_DEVICE", "cuda" if torch.cuda.is_available() else "cpu")
 
-# model = ESMModel(name=model_name, device=device)
-model = ProteinFunctionPredictor.from_files()
+model_name = "AmelieSchreiber/esm2_t6_8M_finetuned_cafa5"
+
+# Environment variables for function classification.
+function_enabled = environ.get("FUNCTION_ENABLED", "true").lower() == "true"
+function_terms_path = environ.get("FUNCTION_TERMS_PATH", "dataset/train_terms.tsv")
+function_obo_path = environ.get("FUNCTION_OBO_PATH", "dataset/go-basic.obo")
+function_min_prob = float(environ.get("FUNCTION_MIN_PROB", 0.05))
+
+logit_processor = ProbabilitiesLogitProcessor()
+
+if function_enabled:
+    logit_processor = ProteinFunctionLogitProcessor.from_files(
+        tsv_fpath=function_terms_path,
+        obo_fpath=function_obo_path,
+        min_probability=function_min_prob,
+    )
+
+model = ESMModel(model_name, logit_processor, device)
+
 
 class HealthResponse(BaseModel):
     status: str
@@ -30,13 +45,6 @@ class HealthResponse(BaseModel):
 
 class ClassifyRequest(BaseModel):
     sequence: str = Field(min_length=1, description="A protein sequence to classify.")
-
-
-class ClassifyResponse(BaseModel):
-    probabilities: List[float] = Field(
-        description="List of probabilities for each class."
-    )
-    runtime: float = Field(description="Time taken to process the request in seconds.")
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -48,7 +56,7 @@ async def health_check():
     }
 
 
-@app.post("/classify", response_model=ClassifyResponse)
+@app.post("/classify")
 async def classify(request: ClassifyRequest):
     """Classify a protein sequence."""
 
