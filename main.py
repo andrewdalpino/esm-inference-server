@@ -19,8 +19,6 @@ app = FastAPI(
 model_name = environ.get("ESM_MODEL_NAME", "facebook/esm2_t6_8M_UR50D")
 device = environ.get("ESM_DEVICE", "cuda" if torch.cuda.is_available() else "cpu")
 
-model_name = "AmelieSchreiber/esm2_t6_8M_finetuned_cafa5"
-
 # Environment variables for function classification.
 function_enabled = environ.get("FUNCTION_ENABLED", "true").lower() == "true"
 function_terms_path = environ.get("FUNCTION_TERMS_PATH", "dataset/train_terms.tsv")
