@@ -1,4 +1,4 @@
-from argparse import ArgumentParser
+from os import environ
 
 import uvicorn
 
@@ -8,13 +8,11 @@ from model import ESMClassifier
 
 from http import HealthResponse, PredictRankRequest, PredictRankResponse
 
-parser = ArgumentParser(description="Run the ESM inference server.")
+# General environment variables for model configuration.
+model_name = environ.get("ESM_MODEL_NAME", "facebook/esm2_t6_8M_UR50D")
+context_length = int(environ.get("CONTEXT_LENGTH", 1024))
+device = environ.get("ESM_DEVICE", "cpu")
 
-parser.add_argument("--model_name", default="facebook/esm2_t6_8M_UR50D", type=str)
-parser.add_argument("--context_length", default=1024, type=int)
-parser.add_argument("--device", default="cuda", type=str)
-
-args = parser.parse_args()
 
 app = FastAPI(
     title="ESM Inference API",
@@ -22,7 +20,7 @@ app = FastAPI(
     version="0.0.3",
 )
 
-model = ESMClassifier(args.model_name, args.context_length, args.device)
+model = ESMClassifier(model_name, context_length, device)
 
 
 @app.get("/health", response_model=HealthResponse)
