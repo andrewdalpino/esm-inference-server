@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 
 from model import ESMClassifier
 
-from .http import HealthResponse, PredictRankRequest, PredictRankResponse
+from http_types import  HealthResponse, PredictRankRequest, PredictRankResponse
 
 # General environment variables for model configuration.
 model_name = environ.get("MODEL_NAME", "facebook/esm2_t6_8M_UR50D")
