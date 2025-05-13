@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from typing import Optional
+from typing import Optional, Any
 
 
 class HealthResponse(BaseModel):
@@ -24,4 +24,4 @@ class PredictRankResponse(BaseModel):
     probabilities: list[float] = Field(
         description="List of probabilities for each class."
     )
-    meta: dict[str, any] = Field(description="Metadata about the request.")
+    meta: dict[str, Any] = Field(description="Metadata about the request.")
