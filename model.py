@@ -47,7 +47,6 @@ class ESMClassifier:
             sequence,
             max_length=self.context_length,
             truncation=True,
-            return_tensors="pt",
         )
 
         input_ids = out["input_ids"]
@@ -75,7 +74,7 @@ class ESMClassifier:
 
         return {
             "labels": labels,
-            "probabilities": probabilities.tolist(),
+            "probabilities": probabilities,
             "meta": {
                 "runtime": timer.duration,
             },
