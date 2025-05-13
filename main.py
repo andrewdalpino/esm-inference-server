@@ -9,9 +9,9 @@ from model import ESMClassifier
 from http import HealthResponse, PredictRankRequest, PredictRankResponse
 
 # General environment variables for model configuration.
-model_name = environ.get("ESM_MODEL_NAME", "facebook/esm2_t6_8M_UR50D")
+model_name = environ.get("MODEL_NAME", "facebook/esm2_t6_8M_UR50D")
 context_length = int(environ.get("CONTEXT_LENGTH", 1024))
-device = environ.get("ESM_DEVICE", "cpu")
+device = environ.get("DEVICE", "cpu")
 
 
 app = FastAPI(
