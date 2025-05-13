@@ -1,58 +1,28 @@
-from os import environ
+from argparse import ArgumentParser
 
 import uvicorn
 
-import torch
-
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field, Optional
 
-from model import ESMModel, ProbabilitiesLogitProcessor, ProteinFunctionLogitProcessor
+from model import ESMClassifier
+
+from http import HealthResponse, PredictRankRequest, PredictRankResponse
+
+parser = ArgumentParser(description="Run the ESM inference server.")
+
+parser.add_argument("--model_name", default="facebook/esm2_t6_8M_UR50D", type=str)
+parser.add_argument("--context_length", default=1024, type=int)
+parser.add_argument("--device", default="cuda", type=str)
+
+args = parser.parse_args()
 
 app = FastAPI(
     title="ESM Inference API",
     description="API for protein sequence inference using ESM models.",
-    version="0.0.2",
+    version="0.0.3",
 )
 
-# General environment variables for model configuration.
-model_name = environ.get("ESM_MODEL_NAME", "facebook/esm2_t6_8M_UR50D")
-device = environ.get("ESM_DEVICE", "cuda" if torch.cuda.is_available() else "cpu")
-
-# Environment variables for function classification.
-function_enabled = environ.get("FUNCTION_ENABLED", "true").lower() == "true"
-function_terms_path = environ.get("FUNCTION_TERMS_PATH", "dataset/train_terms.tsv")
-function_obo_path = environ.get("FUNCTION_OBO_PATH", "dataset/go-basic.obo")
-function_min_prob = float(environ.get("FUNCTION_MIN_PROB", 0.05))
-
-logit_processor = ProbabilitiesLogitProcessor()
-
-if function_enabled:
-    logit_processor = ProteinFunctionLogitProcessor.from_files(
-        tsv_fpath=function_terms_path,
-        obo_fpath=function_obo_path,
-        min_probability=function_min_prob,
-    )
-
-model = ESMModel(model_name, logit_processor, device)
-
-
-class HealthResponse(BaseModel):
-    status: str
-
-
-class ClassifyRequest(BaseModel):
-    sequence: str = Field(min_length=1, description="A protein sequence to classify.")
-
-
-class ClassifyResponse(BaseModel):
-    functions: Optional[list[str]] = Field(
-        default=None, description="List of predicted protein functions (GO terms)."
-    )
-    probabilities: list[float] = Field(
-        description="List of probabilities for each class."
-    )
-    runtime: float = Field(description="Time taken to process the request in seconds.")
+model = ESMClassifier(args.model_name, args.context_length, args.device)
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -64,14 +34,14 @@ async def health_check():
     }
 
 
-@app.post("/classify", response_model=ClassifyResponse)
-async def classify(request: ClassifyRequest):
-    """Classify a protein sequence."""
+@app.post("/rank", response_model=PredictRankResponse)
+async def predict_rank(request: PredictRankRequest):
+    """Return the top k binary classifications for a protein sequence."""
 
     global model
 
     try:
-        return model.classify(request.sequence)
+        return model.predict_rank(request.sequence, request.top_k)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
