@@ -18,7 +18,7 @@ device = environ.get("DEVICE", "cpu")
 app = FastAPI(
     title="ESM Inference API",
     description="API for protein sequence inference using ESM models.",
-    version="0.0.3",
+    version="0.0.4",
 )
 
 model = ESMClassifier(model_name, context_length, device)
