@@ -34,17 +34,20 @@ class TokenAuthentication(BaseHTTPMiddleware):
         self.api_token = api_token
 
 
-async def dispatch(self, request: Request, call_next):
-    token = request.headers.get("Authorization")
+    async def dispatch(self, request: Request, call_next):
+        token = request.headers.get("Authorization")
 
-    if not token or token != f"Bearer {self.api_token}":
-        return JSONResponse(content={"message": "Unauthorized."}, status_code=401)
+        if not token or token != f"Bearer {self.api_token}":
+            return JSONResponse(content={"message": "Unauthorized."}, status_code=401)
 
-    return await call_next(request)
+        return await call_next(request)
 
 
 class ResponseTime(BaseHTTPMiddleware):
     """Measure the time taken to process a request."""
+
+    def __init__(self, app):
+        super().__init__(app)
 
     async def dispatch(self, request: Request, call_next):
         start_time = time()
