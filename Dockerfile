@@ -14,7 +14,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY app .
 
+COPY dataset/go-basic.obo /opt/dataset/go-basic.obo
+
 VOLUME "/root/.cache/huggingface"
+VOLUME "/opt/dataset"
 
 # Expose the API port
 EXPOSE 8000

@@ -1,5 +1,7 @@
 torch==2.7.0
 transformers==4.51.3
+obonet==1.1.1
+networkx==3.4.2
 pydantic==2.11.0
 fastapi==0.115.12
 uvicorn==0.34.2
