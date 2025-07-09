@@ -33,6 +33,7 @@ class TokenAuthentication(BaseHTTPMiddleware):
 
         self.api_token = api_token
 
+
     async def dispatch(self, request: Request, call_next):
         token = request.headers.get("Authorization")
 
