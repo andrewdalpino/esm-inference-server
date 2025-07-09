@@ -1,5 +1,7 @@
-torch==2.7.0
-transformers==4.51.3
+esm==3.2.0
+esmc_function_classifier==0.0.2
+obonet==1.1.1
+networkx==3.4.2
 pydantic==2.11.0
 fastapi==0.115.12
 uvicorn==0.34.2
