@@ -16,6 +16,8 @@ COPY . .
 
 COPY dataset/go-basic.obo /opt/dataset/go-basic.obo
 
+ENV GO_DB_PATH="/opt/dataset/go-basic.obo"
+
 VOLUME "/root/.cache/huggingface"
 VOLUME "/opt/dataset"
 
