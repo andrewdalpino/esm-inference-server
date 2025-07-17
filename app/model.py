@@ -55,9 +55,11 @@ class GoTermClassifier:
 
         tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-        model = AutoModelForSequenceClassification.from_pretrained(model_name)
+        model = AutoModelForSequenceClassification.from_pretrained(
+            model_name, torch_dtype=dtype
+        )
 
-        model = model.to(device=device, dtype=dtype)
+        model = model.to(device)
 
         model.eval()
 

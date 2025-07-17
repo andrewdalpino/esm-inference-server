@@ -1,3 +1,5 @@
+import logging
+
 from time import time
 
 from fastapi import HTTPException, Request
@@ -20,6 +22,8 @@ class ExceptionHandler(BaseHTTPMiddleware):
                 content={"message": e.detail}, status_code=e.status_code
             )
         except Exception as e:
+            logging.error(f"Unhandled exception: {e}")
+
             return JSONResponse(
                 content={"message": "Something went wrong."}, status_code=500
             )
