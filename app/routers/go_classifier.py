@@ -28,7 +28,7 @@ class PredictSubgraphRequest(BaseModel):
 
 
 class PredictSubgraphResponse(BaseModel):
-    subgraph: str = Field(
+    subgraph: dict = Field(
         description="A subgraph of the GO DAG containing the predicted terms and their relationships."
     )
 
@@ -41,7 +41,9 @@ router = APIRouter(prefix="/model")
 
 
 @router.post("/gene-ontology/terms")
-async def predict_terms(request: Request, input: PredictTermsRequest):
+async def predict_terms(
+    request: Request, input: PredictTermsRequest
+) -> PredictTermsResponse:
     """Return the GO term probabilities for a protein sequence."""
 
     probabilities = request.app.state.model.predict_terms(input.sequence)
@@ -50,7 +52,9 @@ async def predict_terms(request: Request, input: PredictTermsRequest):
 
 
 @router.post("/gene-ontology/subgraph")
-async def predict_subgraph(request: Request, input: PredictSubgraphRequest):
+async def predict_subgraph(
+    request: Request, input: PredictSubgraphRequest
+) -> PredictSubgraphResponse:
     """Return the GO subgraph for a protein sequence."""
 
     subgraph, probabilities = request.app.state.model.predict_subgraph(
