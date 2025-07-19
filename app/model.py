@@ -2,8 +2,6 @@ from copy import copy
 
 from collections import defaultdict
 
-from typing import Any
-
 import torch
 
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
@@ -72,16 +70,8 @@ class GoTermClassifier:
         self.device = device
 
     @torch.no_grad()
-    def predict_terms(self, sequence: str, top_p: float = 0.5) -> dict[str, Any]:
-        """
-        Get the GO term probabilities for a given protein sequence.
-
-        Args:
-            sequence: The protein sequence to classify.
-
-        Returns:
-            Dictionary with the results.
-        """
+    def predict_terms(self, sequence: str, top_p: float = 0.5) -> dict[str, float]:
+        """Return the GO term probabilities for a given protein sequence."""
 
         out = self.tokenizer(
             sequence,
@@ -105,20 +95,12 @@ class GoTermClassifier:
             if probability > top_p
         }
 
-        return {
-            "probabilities": probabilities,
-        }
+        return probabilities
 
-    def predict_subgraph(self, sequence: str, top_p: float = 0.5):
-        """
-        Get the GO subgraph for a given protein sequence.
-
-        Args:
-            sequence: The protein sequence to classify.
-
-        Returns:
-            Dictionary with the results.
-        """
+    def predict_subgraph(
+        self, sequence: str, top_p: float = 0.5
+    ) -> tuple[DiGraph, dict[str, float]]:
+        """Return the GO subgraph for a given protein sequence."""
 
         out = self.predict_terms(sequence, top_p)
 
@@ -136,7 +118,4 @@ class GoTermClassifier:
 
         subgraph = self.graph.subgraph(probabilities.keys())
 
-        return {
-            "subgraph": subgraph,
-            "probabilities": probabilities,
-        }
+        return subgraph, probabilities
