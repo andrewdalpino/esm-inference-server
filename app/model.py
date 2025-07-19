@@ -6,6 +6,8 @@ from typing import Any
 
 import torch
 
+from torchao.quantization import Int8WeightOnlyConfig, quantize_
+
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 from networkx import DiGraph
@@ -28,8 +30,8 @@ class GoTermClassifier:
         model_name: str,
         graph: DiGraph,
         context_length: int,
+        quantize: bool,
         device: str,
-        dtype: torch.dtype,
     ):
         """
         Args:
@@ -55,9 +57,12 @@ class GoTermClassifier:
 
         tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-        model = AutoModelForSequenceClassification.from_pretrained(
-            model_name, torch_dtype=dtype
-        )
+        model = AutoModelForSequenceClassification.from_pretrained(model_name)
+
+        model = torch.compile(model)
+
+        if quantize:
+            quantize_(model, Int8WeightOnlyConfig())
 
         model = model.to(device)
 
