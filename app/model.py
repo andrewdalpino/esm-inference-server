@@ -102,9 +102,9 @@ class GoTermClassifier:
     ) -> tuple[DiGraph, dict[str, float]]:
         """Return the GO subgraph for a given protein sequence."""
 
-        out = self.predict_terms(sequence, top_p)
+        probabilities = self.predict_terms(sequence, top_p)
 
-        probabilities = defaultdict(float, out["probabilities"])
+        probabilities = defaultdict(float, probabilities)
 
         # Fix up the predictions by leveraging the GO DAG hierarchy.
         for go_term, parent_probability in copy(probabilities).items():
@@ -118,4 +118,4 @@ class GoTermClassifier:
 
         subgraph = self.graph.subgraph(probabilities.keys())
 
-        return subgraph, probabilities
+        return subgraph, dict(probabilities)

@@ -28,9 +28,6 @@ class PredictSubgraphRequest(BaseModel):
 
 
 class PredictSubgraphResponse(BaseModel):
-    class Config:
-        arbitrary_types_allowed = True
-
     subgraph: str = Field(
         description="A subgraph of the GO DAG containing the predicted terms and their relationships."
     )
