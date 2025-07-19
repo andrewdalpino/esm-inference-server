@@ -28,7 +28,7 @@ dtype = environ.get("DTYPE", "float32")
 app = FastAPI(
     title="ESM2 GO Inference Server",
     description="Inference server for protein gene ontology (GO) classification using the EMC2 family of models.",
-    version="0.0.4",
+    version="0.0.5",
 )
 
 graph = obonet.read_obo(go_db_path)
